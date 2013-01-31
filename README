@@ -1,0 +1,10 @@
+Simple script for maintaining serial port settings on raritan serial servers
+
+
+Usage: ./raritan-uploader host username
+
+You will be prompted for a password
+
+Contents for config are as follows
+
+config port 2 name test   parity none bps 19200 emulation VT100 flowcontrol none alwaysactive true telnet 7002

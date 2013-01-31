@@ -1,0 +1,103 @@
+#!/usr/bin/expect
+
+# $Id$
+# Update raritan serial server from a config
+# Copyright (C) 2013 Andrew Lemay <andrew@lemay.org>
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#  
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#  
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials provided
+#       with the distribution.
+#  
+#     * Neither the name of Andrew Lemay nor the names of
+#       its contributors may be used to endorse or promote products
+#       derived from this software without specific prior written
+#       permission.
+#  
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+#fix timeout issues
+set force_conservative 0  ;# set to 1 to force conservative mode even if
+                          ;# script wasn't run conservatively originally
+
+#arg 0 = host of serial serial server
+#arg 1 = username on serial server
+#arg 2 = password for that user
+
+proc usage { } {
+       global argv0;
+
+       puts stderr "Usage: $argv0 host username";
+       exit 1;
+}; #end proc usage
+
+
+if { $argc != 2 } {
+       usage;
+} #endif
+
+#grab those arguments
+set host [lindex $argv 0];
+set username [lindex $argv 1];
+#set password [lindex $argv 2];
+
+set fp [open "config.bak" r]
+     fconfigure $fp -buffering line
+     gets $fp data
+
+	spawn /bin/bash
+        send "ssh $username@$host\r"
+        sleep 5
+
+# grab the password
+stty -echo
+send_user -- "Password for $username@$host: "
+expect_user -re "(.*)\n"
+send_user "\n"
+stty echo
+set pass $expect_out(1,string)
+
+
+        send "$pass\r"
+        expect "admin >"
+        sleep 5
+        send "config\r"
+        expect "admin > Config >"
+        sleep 5
+	send "port\r"
+	expect "admin > Config > Port >"
+        sleep 5
+     while {$data != ""} {
+          send $data\r
+     gets $fp data
+	sleep 5
+       expect "admin > Config > Port >"
+     }
+     close $fp
+
+	expect "admin > Config > Port >"
+        sleep 5
+	send "top\r"
+	expect "admin > Config > Port >"
+        sleep 2
+	send "logout\r"
+
+exit 0
+
