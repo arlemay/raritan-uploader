@@ -39,7 +39,6 @@ set force_conservative 0  ;# set to 1 to force conservative mode even if
 
 #arg 0 = host of serial serial server
 #arg 1 = username on serial server
-#arg 2 = password for that user
 
 proc usage { } {
        global argv0;
@@ -56,9 +55,8 @@ if { $argc != 2 } {
 #grab those arguments
 set host [lindex $argv 0];
 set username [lindex $argv 1];
-#set password [lindex $argv 2];
 
-set fp [open "config.bak" r]
+set fp [open "config.new" r]
      fconfigure $fp -buffering line
      gets $fp data
 
@@ -66,7 +64,7 @@ set fp [open "config.bak" r]
         send "ssh $username@$host\r"
         sleep 5
 
-# grab the password
+# grab the password from the user
 stty -echo
 send_user -- "Password for $username@$host: "
 expect_user -re "(.*)\n"
@@ -85,7 +83,8 @@ set pass $expect_out(1,string)
 	expect "admin > Config > Port >"
         sleep 5
      while {$data != ""} {
-          send $data\r
+          send "$data\r"
+	 sleep 5
      gets $fp data
 	sleep 5
        expect "admin > Config > Port >"
