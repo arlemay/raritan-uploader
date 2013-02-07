@@ -1,7 +1,7 @@
 Simple script for maintaining serial port settings on raritan serial servers
 
 
-Usage: ./raritan-uploader host username
+Usage: ./raritan-uploader host username config
 
 You will be prompted for a password
 

@@ -43,20 +43,21 @@ set force_conservative 0  ;# set to 1 to force conservative mode even if
 proc usage { } {
        global argv0;
 
-       puts stderr "Usage: $argv0 host username";
+       puts stderr "Usage: $argv0 host username config";
        exit 1;
 }; #end proc usage
 
 
-if { $argc != 2 } {
+if { $argc != 3 } {
        usage;
 } #endif
 
 #grab those arguments
 set host [lindex $argv 0];
 set username [lindex $argv 1];
+set config [lindex $argv 2];
 
-set fp [open "config.new" r]
+set fp [open $config r]
      fconfigure $fp -buffering line
      gets $fp data
 
